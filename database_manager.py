@@ -3,8 +3,7 @@ import os
 import pathlib
 import bcrypt
 class Account:
-    def __init__(self,database_id,username,pass_hash,games,wins):
-        
+    def __init__(self,database_id,username,pass_hash,games,wins): 
         self.database_id = database_id
         self.username = username;
         self.pass_hash = pass_hash;
