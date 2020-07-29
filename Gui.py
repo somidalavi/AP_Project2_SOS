@@ -12,7 +12,6 @@ cell_font.setPointSize(font_size);
 class SosPlayerHeader(QWidget):
     def __init__(self,account,score_signal):
         super().__init__();
-        self.account = account;
         layout = QtWidgets.QVBoxLayout();
         self.username_lb = QLabel(account.username);
         self.score_lb = QLabel('Score : %2d'% (0,));
@@ -31,9 +30,15 @@ class SosHeader(QWidget):
     def __init__(self,sos_game,account1,account2):
         super().__init__();
         layout = QtWidgets.QHBoxLayout();
+        self.accounts = [account1,account2];
         layout.addWidget(SosPlayerHeader(account1,sos_game.p1scoreUpdated));
         layout.addWidget(SosPlayerHeader(account2,sos_game.p2scoreUpdated));
+        self.turn_lb = QLabel("%s's turn" % (account1.username));
+        sos_game.turnChanged.connect(self.change_turn)
+        layout.addWidget(self.turn_lb);
         self.setLayout(layout);
+    def change_turn(self,turn):
+        self.turn_lb.setText("%s's turn" %(self.accounts[turn].username))
 
 class SosGridCell(QGraphicsSimpleTextItem):
     def __init__(self,sos_game,row,col):
