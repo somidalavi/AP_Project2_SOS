@@ -4,7 +4,8 @@ from PySide2 import QtCore
 class SOS(QObject):
     
     scoresUpdated = Signal(int,int);
-    letterPlaced =  Signal(int,int,str);
+    letterPlaced  = Signal(int,int,str);
+    turnChanged   = Signal(int);
     ps_triple = [
         (-1,-1, 1, 1),
         (-1, 0, 1, 0),
@@ -52,6 +53,7 @@ class SOS(QObject):
             if flag: num_scored += 1;
         if num_scored == 0:
             self.turn += 1;
+            self.turnChanged.emit(self.turn);
             return ;
         if self.turn == 0:
             self.p1_score += num_scored
@@ -66,6 +68,19 @@ class Model:
     def __init__(self):
         self.db = AccountMananger('lib.db');
         self.accounts = self.db.get_all_accounts();
+        self.username_dict = { acc.username : acc for acc in self.accounts}
+        self.logged_account = None;
+
+    def login(self,username,password):
+        #this assumes that the username is at least correct (as in it exists)
+        account = self.username_dict[username];
+        if account.check_password(password):
+            self.logged_account = account; 
+            if account.username = 'admin' and password == '123456':
+                return False;
+        else : raise ValueError("wrong password")
+        return True;
+
     def new_game(self,n):
         return SOS(n);
         
