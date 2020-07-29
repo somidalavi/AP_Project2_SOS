@@ -1,13 +1,40 @@
-from PySide2.QtWidgets import QGraphicsScene,QGraphicsView ,QGraphicsSimpleTextItem
+from PySide2.QtWidgets import QGraphicsScene,QGraphicsView ,\
+                                QGraphicsSimpleTextItem,QWidget,QLabel
+from PySide2 import QtWidgets
 from PySide2.QtCore import Qt ,Slot,QRectF
 from PySide2.QtGui import QFont
-
 csize = 50; # size of each cell
 col_offset = 20; #used as an offset to centre grid text
 row_offset = 5
 font_size = 20;
 cell_font =  QFont()
 cell_font.setPointSize(font_size);
+class SosPlayerHeader(QWidget):
+    def __init__(self,account,score_signal):
+        super().__init__();
+        self.account = account;
+        layout = QtWidgets.QVBoxLayout();
+        self.username_lb = QLabel(account.username);
+        self.score_lb = QLabel('Score : %2d'% (0,));
+        self.games_lb = QLabel("Games : %2d"% (account.games, ));
+        self.wins_lb  = QLabel("Wins  : %2d"% (account.wins,));
+        score_signal.connect(self.score_changed);
+        layout.addWidget(self.username_lb);
+        layout.addWidget(self.score_lb)
+        layout.addWidget(self.games_lb);
+        layout.addWidget(self.wins_lb);
+        self.setLayout(layout);
+    def score_changed(self,score):
+        self.score_lb.setText("Score: %2d" %(score));
+
+class SosHeader(QWidget):
+    def __init__(self,sos_game,account1,account2):
+        super().__init__();
+        layout = QtWidgets.QHBoxLayout();
+        layout.addWidget(SosPlayerHeader(account1,sos_game.p1scoreUpdated));
+        layout.addWidget(SosPlayerHeader(account2,sos_game.p2scoreUpdated));
+        self.setLayout(layout);
+
 class SosGridCell(QGraphicsSimpleTextItem):
     def __init__(self,sos_game,row,col):
         super().__init__("-");
