@@ -4,12 +4,14 @@ import pathlib
 from PySide2.QtWidgets import QApplication
 from PySide2 import QtWidgets
 import Gui
+import Model
 import sys
 class MainWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__();
         self.layout = QtWidgets.QVBoxLayout();
-        v2 = Gui.SosGridView(10);
+        game = Model.SOS(10);
+        v2 = Gui.SosGridView(game);
         self.layout.addWidget(v2);
         self.setLayout(self.layout);
 if __name__ == '__main__':
