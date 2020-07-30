@@ -3,9 +3,10 @@ import os
 import pathlib
 from PySide2.QtWidgets import QApplication
 from PySide2 import QtWidgets
-import SOS_gui
+import SOS_gui as Gui
 import Model
 import sys
+import Login_gui
 from database_manager import Account,AccountManager
 class MainWindow(QtWidgets.QWidget):
     
@@ -16,14 +17,14 @@ class MainWindow(QtWidgets.QWidget):
         self.b = Account(2,'admin2',[],2,1);
         game = Model.SOS(5);
         game.gameEnded.connect(self.display_end_message);
-        v2 = SOS_gui.SosGridView(game);
+        v2 = Gui.SosGridView(game);
         self.tableModel = tb
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.tableModel);
         self.tableModel.addAccount("efds",'fsd');
         self.tableModel.addAccount('fdshgfhf','gdsgds');
         self.layout.addWidget(self.table)
-        self.layout.addWidget(SOS_gui.SosHeader(game,self.a,self.b));
+        self.layout.addWidget(Gui.SosHeader(game,self.a,self.b));
         self.layout.addWidget(v2);
         self.setLayout(self.layout);
     def display_end_message(self,result):
@@ -36,15 +37,20 @@ class MainWindow(QtWidgets.QWidget):
             msg_box.setText("%s has won!!" % (self.b.username));
         self.test_add();
         msg_box.exec();
+        print("Hello")
+        self.close()
     def test_add(self):
         self.tableModel.removeRows(2,1,None);
 if __name__ == '__main__':
     os.chdir(pathlib.Path(__file__).parent.absolute());
     app = QApplication();
-    db = AccountManager('lib.db')
-    tb = Model.AccountsModel(db);
-    v = MainWindow(tb);
-    v.show()
-    b = MainWindow(tb);
-    b.show()
+    model = Model.Model(); 
+    v = Login_gui.LoginWindow(model);
+    res = v.exec_()
+    del v
+    print(res)
+    #v = MainWindow(tb);
+    #v.show()
+    #b = MainWindow(tb);
+    #b.show()
     sys.exit(app.exec_());

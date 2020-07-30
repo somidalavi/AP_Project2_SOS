@@ -91,7 +91,7 @@ class AccountsModel(QAbstractTableModel):
         super(AccountsModel,self).__init__();
         self.db_manager = db_manager;
         self.accounts = self.db_manager.get_all_accounts();
-        self.usernames = {account.username for account in self.accounts};
+        self.usernames = {account.username : account for account in self.accounts};
     def addAccount(self,username,password):
         if username in self.usernames:
             return False
@@ -134,24 +134,18 @@ class Model(QObject):
     accountsUpdated = Signal(int);
     def __init__(self):
         super().__init__();
-
-        self.db = AccountMananger('lib.db');
-        self.accounts = self.db.get_all_accounts();
-        self.username_dict = { acc.username : acc for acc in self.accounts}
+        self.db = AccountManager('lib.db');
+        self.accounts_model = AccountsModel(self.db);
         self.logged_account = None;
-
     def login(self,username,password):
         #this assumes that the username is at least correct (as in it exists)
-        account = self.username_dict[username];
+        account = self.accounts_model.usernames[username];
         if account.check_password(password):
             self.logged_account = account; 
             if account.username == 'admin' and password == '123456':
                 return False;
         else : raise ValueError("wrong password")
         return True;
-    def delete_account(self,index):
-        pass
-
     def new_game(self,n):
         return SOS(n);
         

@@ -2,7 +2,7 @@ from PySide2.QtWidgets import QGraphicsScene,QGraphicsView ,\
                                 QGraphicsSimpleTextItem,QWidget,QLabel
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt ,Slot,QRectF
-from PySide2.QtGui import QFont
+from PySide2.QtGui import QFont,QWindow
 csize = 50; # size of each cell
 col_offset = 20; #used as an offset to centre grid text
 row_offset = 5
@@ -86,4 +86,25 @@ class SosGridView(QGraphicsView):
     def resizeEvent(self,e):
         super(SosGridView,self).resizeEvent(e);
         self.fitInView(0,0,csize * self.n,csize * self.n);
+
+class SOSWindow(QWidget):
+    def __init__(self,n,account1,account2,model):
+        super(SOSWindow,self).__init__(parent);
+        layout = QtWidgets.QVBoxLayout();
+        self.game = model.new_game(n);
+        layout.addWidget(SOSHeader(self.game,account1,account));
+        layout.addWidget(SosGridView(self.game));
+        self.setLayout(layout)
+        self.game.gameEnded.connect(self.game_ended);
+    def game_ended(self,result):
+        msg_box = QtWidgets.QMessageBox();
+        if result == -1 :
+            msg_box.setText("%s has won!!" % (self.a.username));
+        elif result == 0:
+            msg_box.setText("the game ended in a draw");
+        else :
+            msg_box.setText("%s has won!!" % (self.b.username));
+        self.test_add();
+        msg_box.exec();
+        self.close()
 
