@@ -3,7 +3,7 @@ import os
 import pathlib
 from PySide2.QtWidgets import QApplication
 from PySide2 import QtWidgets
-import Gui
+import SOS_gui
 import Model
 import sys
 from database_manager import Account,AccountManager
@@ -16,14 +16,14 @@ class MainWindow(QtWidgets.QWidget):
         self.b = Account(2,'admin2',[],2,1);
         game = Model.SOS(5);
         game.gameEnded.connect(self.display_end_message);
-        v2 = Gui.SosGridView(game);
+        v2 = SOS_gui.SosGridView(game);
         self.tableModel = tb
         self.table = QtWidgets.QTableView()
         self.table.setModel(self.tableModel);
         self.tableModel.addAccount("efds",'fsd');
         self.tableModel.addAccount('fdshgfhf','gdsgds');
         self.layout.addWidget(self.table)
-        self.layout.addWidget(Gui.SosHeader(game,self.a,self.b));
+        self.layout.addWidget(SOS_gui.SosHeader(game,self.a,self.b));
         self.layout.addWidget(v2);
         self.setLayout(self.layout);
     def display_end_message(self,result):
