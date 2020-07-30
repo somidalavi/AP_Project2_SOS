@@ -3,6 +3,8 @@ import os
 import pathlib
 import bcrypt
 class Account:
+    data_len = 3
+    data_field_names = ['username','games','wins'];
     def __init__(self,database_id,username,pass_hash,games,wins): 
         self.database_id = database_id
         self.username = username;
@@ -28,6 +30,10 @@ class AccountManager():
         if exists : return 
         self.con.execute(AccountManager.database_schema);
         self.con.commit()
+    def remove_account(self,account):
+        self.con.execute('''DELETE FROM accounts
+                         WHERE account_id = ?;''',(account.database_id,));
+        self.con.commit();
     def get_account(self,username):
         cursor  = self.con.execute('''
                  SELECT account_id,username,password_hash,num_games,num_wins
@@ -37,8 +43,8 @@ class AccountManager():
         rows = cursor.fetchall()
         if len(rows) != 1:
             raise Exception("Database Error Occured");
-        row = rows[0]
-        return Account(row[0],row[1],row[2],row[3],row[4]);
+        row = list(rows[0])
+        return Account(*row);
     #updates only the number of ogames and win 
     #you should use other functions to change the password
     def update_account(self,account):

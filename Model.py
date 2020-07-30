@@ -1,6 +1,9 @@
 from database_manager import Account , AccountManager
 from PySide2.QtCore import QObject , Signal
 from PySide2 import QtCore
+from PySide2.QtCore import Qt
+from PySide2.QtCore import QAbstractTableModel
+
 class SOS(QObject):
     
     p1scoreUpdated = Signal(int);
@@ -82,8 +85,56 @@ class SOS(QObject):
             raise ValueError('invalid row or column');
         return self.board[row][col];
 
-class Model:
+
+class AccountsModel(QAbstractTableModel):
+    def __init__(self,db_manager):
+        super(AccountsModel,self).__init__();
+        self.db_manager = db_manager;
+        self.accounts = self.db_manager.get_all_accounts();
+        self.usernames = {account.username for account in self.accounts};
+    def addAccount(self,username,password):
+        if username in self.usernames:
+            return False
+        self.usernames.add(username)
+        self.accounts.append(self.db_manager.add_account(username,password));
+        self.insertRows(len(self.accounts),1);
+    #should only be called internally
+    def insertRows(self,row,count,parent=None):
+        #for now we only support insert a single row to the end of the list
+        self.beginInsertRows(QtCore.QModelIndex(),row,row);
+        self.endInsertRows();
+    def removeRows(self,row,count,parent=None):
+        #again we only remove one row at a time
+        if row >= self.rowCount() or count != 1:
+            return False;
+        self.beginRemoveRows(QtCore.QModelIndex(),row,row);
+        account = self.accounts[row];
+        self.db_manager.remove_account(account);
+        self.accounts.pop(row);
+        self.endRemoveRows();
+    
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+            return Account.data_field_names[section];
+        return QAbstractTableModel.headerData(self, section, orientation, role)
+    
+    def data(self,index,role):
+        if role == Qt.DisplayRole:
+            col = index.column();
+            account = self.accounts[index.row()];
+            if col == 0: return account.username
+            elif col == 1: return account.games;
+            else : return account.wins;
+    def rowCount(self,index = None):
+        return len(self.accounts);
+    def columnCount(self,index = None):
+        return Account.data_len;
+        
+class Model(QObject):
+    accountsUpdated = Signal(int);
     def __init__(self):
+        super().__init__();
+
         self.db = AccountMananger('lib.db');
         self.accounts = self.db.get_all_accounts();
         self.username_dict = { acc.username : acc for acc in self.accounts}
@@ -98,6 +149,8 @@ class Model:
                 return False;
         else : raise ValueError("wrong password")
         return True;
+    def delete_account(self,index):
+        pass
 
     def new_game(self,n):
         return SOS(n);

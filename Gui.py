@@ -9,6 +9,7 @@ row_offset = 5
 font_size = 20;
 cell_font =  QFont()
 cell_font.setPointSize(font_size);
+
 class SosPlayerHeader(QWidget):
     def __init__(self,account,score_signal):
         super().__init__();
