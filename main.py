@@ -49,8 +49,10 @@ if __name__ == '__main__':
     res = v.exec_()
     del v
     print(res)
-    #v = MainWindow(tb);
-    #v.show()
+    db = AccountManager('lib.db');
+    tb = Model.AccountsModel(db);
+    v = MainWindow(tb);
+    v.show()
     #b = MainWindow(tb);
     #b.show()
     sys.exit(app.exec_());

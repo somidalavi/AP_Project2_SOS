@@ -95,8 +95,9 @@ class AccountsModel(QAbstractTableModel):
     def addAccount(self,username,password):
         if username in self.usernames:
             return False
-        self.usernames.add(username)
-        self.accounts.append(self.db_manager.add_account(username,password));
+        n_account = self.db_manager.add_account(username,password);
+        self.usernames[username] = n_account;
+        self.accounts.append(n_account);
         self.insertRows(len(self.accounts),1);
     #should only be called internally
     def insertRows(self,row,count,parent=None):
@@ -131,7 +132,7 @@ class AccountsModel(QAbstractTableModel):
         return Account.data_len;
         
 class Model(QObject):
-    accountsUpdated = Signal(int);
+    loginChanged = Signal();
     def __init__(self):
         super().__init__();
         self.db = AccountManager('lib.db');
@@ -144,9 +145,12 @@ class Model(QObject):
             self.logged_account = account; 
             if account.username == 'admin' and password == '123456':
                 return False;
+            self.logingChanged.emit();
         else : raise ValueError("wrong password")
         return True;
     def new_game(self,n):
         return SOS(n);
+    def get_login(self,n):
+        return self.logged_account;
         
 

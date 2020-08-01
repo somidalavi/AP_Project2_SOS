@@ -45,7 +45,7 @@ class AccountManager():
             raise Exception("Database Error Occured");
         row = list(rows[0])
         return Account(*row);
-    #updates only the number of ogames and win 
+    #updates only the number of games and wins
     #you should use other functions to change the password
     def update_account(self,account):
         self.con.execute('''
