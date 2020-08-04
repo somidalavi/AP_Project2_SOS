@@ -8,6 +8,7 @@ import Model
 import sys
 import Login_gui
 from database_manager import Account,AccountManager
+from AccountEdit_gui import AccountManagerWidget;
 class MainWindow(QtWidgets.QWidget):
     
     def __init__(self,tb):
@@ -49,10 +50,13 @@ if __name__ == '__main__':
     res = v.exec_()
     del v
     print(res)
-    db = AccountManager('lib.db');
-    tb = Model.AccountsModel(db);
-    v = MainWindow(tb);
+    if not res : sys.exit()
+    v = AccountManagerWidget(model);
     v.show()
+    #db = AccountManager('lib.db');
+    #tb = Model.AccountsModel(db);
+    #v = MainWindow(tb);
+    #v.show()
     #b = MainWindow(tb);
     #b.show()
     sys.exit(app.exec_());

@@ -3,7 +3,6 @@ from PySide2.QtCore import QObject , Signal
 from PySide2 import QtCore
 from PySide2.QtCore import Qt
 from PySide2.QtCore import QAbstractTableModel
-
 class SOS(QObject):
     
     p1scoreUpdated = Signal(int);
@@ -92,21 +91,42 @@ class AccountsModel(QAbstractTableModel):
         self.db_manager = db_manager;
         self.accounts = self.db_manager.get_all_accounts();
         self.usernames = {account.username : account for account in self.accounts};
-    def addAccount(self,username,password):
-        if username in self.usernames:
-            return False
-        n_account = self.db_manager.add_account(username,password);
+    def addAccount(self,username,f_name,l_name,password):
+        if (not self.check_input(username,f_name,l_name,password)) or username in self.usernames:
+            return False;
+        n_account = self.db_manager.add_account(username,f_name,l_name,password);
         self.usernames[username] = n_account;
         self.accounts.append(n_account);
         self.insertRows(len(self.accounts),1);
+        return True;
+    def check_input(self,username,f_name,l_name,password):
+        if f_name == '' or l_name =='' or password == '':
+            return False
+        return True;
+
+    def editAccount(self,username,f_name,l_name,password):
+        if (not self.check_input(username,f_name,l_name,"PlaceHoldervalue")) :
+            return False;
+        print("DSFdsf")
+        account = self.usernames[username];
+        if password != '':
+            print("WE")
+            self.db_manager.update_password(account,password)
+        account.f_name = f_name;
+        account.l_name = l_name;
+        self.db_manager.update_account(account);
+    
     #should only be called internally
     def insertRows(self,row,count,parent=None):
         #for now we only support insert a single row to the end of the list
         self.beginInsertRows(QtCore.QModelIndex(),row,row);
         self.endInsertRows();
+    
     def removeRows(self,row,count,parent=None):
         #again we only remove one row at a time
-        if row >= self.rowCount() or count != 1:
+        #you also can't delte the first account which is the admin
+        print(row)
+        if row == 0  or row >= self.rowCount() or count != 1:
             return False;
         self.beginRemoveRows(QtCore.QModelIndex(),row,row);
         account = self.accounts[row];
@@ -114,6 +134,13 @@ class AccountsModel(QAbstractTableModel):
         self.accounts.pop(row);
         self.endRemoveRows();
     
+    def flags(self,index):
+        return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
+    def setData(self,index,value,role):
+        if rol != Qt.DispalyRole:
+            return;
+        return ;
+
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
             return Account.data_field_names[section];
@@ -124,10 +151,14 @@ class AccountsModel(QAbstractTableModel):
             col = index.column();
             account = self.accounts[index.row()];
             if col == 0: return account.username
-            elif col == 1: return account.games;
-            else : return account.wins;
+            elif col == 1: return account.f_name;
+            elif col == 2: return account.l_name;
+            elif col == 3: return account.games
+            elif col == 4: return account.wins;
+
     def rowCount(self,index = None):
         return len(self.accounts);
+    
     def columnCount(self,index = None):
         return Account.data_len;
         
@@ -141,16 +172,19 @@ class Model(QObject):
     def login(self,username,password):
         #this assumes that the username is at least correct (as in it exists)
         account = self.accounts_model.usernames[username];
+        print(account.username,account.pass_hash,account.check_password(password),password)
         if account.check_password(password):
             self.logged_account = account; 
             if account.username == 'admin' and password == '123456':
                 return False;
-            self.logingChanged.emit();
+            self.loginChanged.emit();
         else : raise ValueError("wrong password")
         return True;
     def new_game(self,n):
         return SOS(n);
     def get_login(self,n):
         return self.logged_account;
+    def is_admin(self):
+        return self.logged_account.username == 'admin';
         
 
