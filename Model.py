@@ -107,15 +107,13 @@ class AccountsModel(QAbstractTableModel):
     def editAccount(self,username,f_name,l_name,password):
         if (not self.check_input(username,f_name,l_name,"PlaceHoldervalue")) :
             return False;
-        print("DSFdsf")
         account = self.usernames[username];
         if password != '':
-            print("WE")
             self.db_manager.update_password(account,password)
         account.f_name = f_name;
         account.l_name = l_name;
         self.db_manager.update_account(account);
-    
+        return True;
     #should only be called internally
     def insertRows(self,row,count,parent=None):
         #for now we only support insert a single row to the end of the list
@@ -182,7 +180,7 @@ class Model(QObject):
         return True;
     def new_game(self,n):
         return SOS(n);
-    def get_login(self,n):
+    def get_login(self):
         return self.logged_account;
     def is_admin(self):
         return self.logged_account.username == 'admin';

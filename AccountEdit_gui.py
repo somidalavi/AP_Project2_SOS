@@ -44,7 +44,10 @@ class EditAccountDialog(AddAccountDialog):
         password = self.password_inp.text()
         f_name = self.f_name_inp.text()
         l_name = self.l_name_inp.text()
-        if self.model.accounts_model.editAccount(self.username,f_name,l_name,password): self.accept();
+        print(password,f_name,l_name)
+        if self.model.accounts_model.editAccount(self.username,f_name,l_name,password):
+            print('acception')
+            self.accept();
         else : self.reject()
 def show_message(msg):
     msg_box = QtWidgets.QMessageBox()

@@ -8,7 +8,7 @@ import Model
 import sys
 import Login_gui
 from database_manager import Account,AccountManager
-from AccountEdit_gui import AccountManagerWidget;
+from AccountEdit_gui import AccountManagerWidget,EditAccountDialog;
 class MainWindow(QtWidgets.QWidget):
     
     def __init__(self,tb):
@@ -49,8 +49,12 @@ if __name__ == '__main__':
     v = Login_gui.LoginWindow(model);
     res = v.exec_()
     del v
-    print(res)
-    if not res : sys.exit()
+    #if we didn't succed in signing and haven't signed as admin then exit
+    if not model.get_login(): sys.exit()
+    if not res:
+        di = EditAccountDialog(None,model.get_login(),model,'admin');
+        res = di.exec_()
+        if not res: sys.exit()
     v = AccountManagerWidget(model);
     v.show()
     #db = AccountManager('lib.db');
