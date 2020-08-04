@@ -2,7 +2,7 @@ from database_manager import Account , AccountManager
 from PySide2.QtCore import QObject , Signal
 from PySide2 import QtCore
 from PySide2.QtCore import Qt
-from PySide2.QtCore import QAbstractTableModel
+from PySide2.QtCore import QAbstractTableModel,QModelIndex
 class SOS(QObject):
     
     p1scoreUpdated = Signal(int);
@@ -113,7 +113,18 @@ class AccountsModel(QAbstractTableModel):
         account.f_name = f_name;
         account.l_name = l_name;
         self.db_manager.update_account(account);
+
+        self.emitChange(self.accounts.index(account))
         return True;
+
+    def emitChange(self,row):
+        topleft  = self.index(row,0)
+        botright = self.index(row,Account.data_len - 1)
+        self.dataChanged.emit(topleft,botright)
+
+    def updateAccount(self,account):
+        self.db_manager.update_account(account)
+        self.emitChange(self.accounts.index(account))
     #should only be called internally
     def insertRows(self,row,count,parent=None):
         #for now we only support insert a single row to the end of the list
@@ -134,10 +145,6 @@ class AccountsModel(QAbstractTableModel):
     
     def flags(self,index):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
-    def setData(self,index,value,role):
-        if rol != Qt.DispalyRole:
-            return;
-        return ;
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
