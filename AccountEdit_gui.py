@@ -1,6 +1,7 @@
 from PySide2.QtWidgets import QWidget,QLabel,QTableView,QAction,QMenu,QDialog
 from PySide2 import QtWidgets
 from PySide2 import QtGui
+from Helper import show_message,add_label,add_button
 from PySide2.QtCore import Qt
 class AddAccountDialog(QDialog):
     def __init__(self,parent,model):
@@ -8,8 +9,6 @@ class AddAccountDialog(QDialog):
         self.model = model;
         self.username_inp = QtWidgets.QLineEdit();
         self.password_inp = QtWidgets.QLineEdit();
-        self.add_button = QtWidgets.QPushButton('add')
-        self.add_button.clicked.connect(self.add_account)
         self.layout = QtWidgets.QFormLayout()
         self.layout.addRow('username',self.username_inp)
         self.layout.addRow('password',self.password_inp);
@@ -17,7 +16,7 @@ class AddAccountDialog(QDialog):
         self.f_name_inp = QtWidgets.QLineEdit();
         self.layout.addRow('first name:',self.f_name_inp)
         self.layout.addRow('last name:',self.l_name_inp);
-        self.layout.addWidget(self.add_button)
+        self.add_button = add_button(self.layout,"add",self.add_account)
         self.setLayout(self.layout)
     def add_account(self):
         username = self.username_inp.text()
@@ -38,9 +37,7 @@ class EditAccountDialog(AddAccountDialog):
         del self.add_button;
         self.l_name_inp.setText(account.l_name);
         self.f_name_inp.setText(account.f_name);
-        self.edit_button = QtWidgets.QPushButton("Edit");
-        self.edit_button.clicked.connect(self.edit_account);
-        self.layout.addWidget(self.edit_button)
+        add_button(self.layout,'Edit',self.edit_account)
     def edit_account(self):
         password = self.password_inp.text()
         f_name = self.f_name_inp.text()
@@ -50,10 +47,7 @@ class EditAccountDialog(AddAccountDialog):
             print('acception')
             self.accept();
         else : self.reject()
-def show_message(msg):
-    msg_box = QtWidgets.QMessageBox()
-    msg_box.setText(msg);
-    msg_box.exec()
+
 
 class AccountManagerWidget(QtWidgets.QTableView):
     def __init__(self,parent,model):
@@ -63,6 +57,7 @@ class AccountManagerWidget(QtWidgets.QTableView):
         self.setModel(model.accounts_model);
         self.menu = QMenu(self);
         self.model = model
+        #alot of lines jst for a menu but which is bad
         self.edit_action=   QtWidgets.QAction('edit',self);
         self.add_action =   QAction('add an account',self);
         self.remove_action= QAction('delete',self);

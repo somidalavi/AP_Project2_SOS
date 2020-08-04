@@ -64,7 +64,6 @@ class AccountManager():
     #this assumes that the operation is permitted
     #it also updates the pass_hash of the account object itself
     def update_password(self,account,new_pass):    
-        print(new_pass);
         new_hash = bcrypt.hashpw(new_pass.encode('utf-8'), bcrypt.gensalt( 12 ));
         account.pass_hash = new_hash;
         self.con.execute('''

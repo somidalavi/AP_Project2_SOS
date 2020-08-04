@@ -3,6 +3,7 @@ from PySide2.QtWidgets import QGraphicsScene,QGraphicsView ,\
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt ,Slot,QRectF
 from PySide2.QtGui import QFont,QWindow
+from Helper import add_button,add_label
 csize = 50; # size of each cell
 col_offset = 20; #used as an offset to centre grid text
 row_offset = 5
@@ -14,15 +15,11 @@ class SosPlayerHeader(QWidget):
     def __init__(self,account,score_signal):
         super().__init__();
         layout = QtWidgets.QVBoxLayout();
-        self.username_lb = QLabel(account.username);
-        self.score_lb = QLabel('Score : %2d'% (0,));
-        self.games_lb = QLabel("Games : %2d"% (account.games, ));
-        self.wins_lb  = QLabel("Wins  : %2d"% (account.wins,));
+        self.username_lb = add_label(layout,account.username);
+        self.score_lb = add_label(layout,'Score : %2d'% (0,));
+        self.games_lb = add_label(layout,"Games : %2d"% (account.games, ));
+        self.wins_lb  = add_label(layout,"Wins  : %2d"% (account.wins,));
         score_signal.connect(self.score_changed);
-        layout.addWidget(self.username_lb);
-        layout.addWidget(self.score_lb)
-        layout.addWidget(self.games_lb);
-        layout.addWidget(self.wins_lb);
         self.setLayout(layout);
     def score_changed(self,score):
         self.score_lb.setText("Score: %2d" %(score));
@@ -91,6 +88,7 @@ class SOSWindow(QWidget):
     def __init__(self,parent,n,account1,account2,model):
         super(SOSWindow,self).__init__(parent);
         self.setWindowFlags(Qt.Window);
+        self.model = model
         layout = QtWidgets.QVBoxLayout();
         self.game = model.new_game(n);
         self.a = account1
@@ -100,19 +98,23 @@ class SOSWindow(QWidget):
         self.setLayout(layout)
         self.game.gameEnded.connect(self.game_ended);
     def game_ended(self,result):
-        msg_box = QtWidgets.QMessageBox();
+        self.a.games += 1;
+        self.b.games += 1
         if result == -1 :
-            msg_box.setText("%s has won!!" % (self.a.username));
+            show_message("%s has won!!" % (self.a.username));
+            self.a.wins += 1;
         elif result == 0:
-            msg_box.setText("the game ended in a draw");
+            show_message("the game ended in a draw");
         else :
-            msg_box.setText("%s has won!!" % (self.b.username));
-        #self.test_add();
-        msg_box.exec();
+            show_message("%s has won!!" % (self.b.username));
+            self.b.wins += 1;
+        self.model.accounts_model.updateAccount(self.a)
+        self.model.accounts_model.updateAccount(self.b)
         self.close()
     def closeEvent(self,e):
         self.deleteLater()
 from PySide2.QtWidgets import QComboBox,QSpinBox,QPushButton,QFormLayout
+
 class SOSDialog(QDialog):
     def __init__(self,model):
         super(SOSDialog,self).__init__();
@@ -121,12 +123,10 @@ class SOSDialog(QDialog):
         self.combo_box = QComboBox()
         self.combo_box.setModel(self.model.accounts_model);
         self.n_input = QSpinBox();
-        self.new_game_button = QPushButton("New Game");
-        self.new_game_button.clicked.connect(self.new_game);
         layout = QFormLayout();
         layout.addRow('Second Player:',self.combo_box);
         layout.addRow("Grid size :",self.n_input);
-        layout.addWidget(self.new_game_button);
+        add_button(layout,"New Game",self.new_game)
         self.setLayout(layout);
     def new_game(self):
         self.username = self.combo_box.currentText();
