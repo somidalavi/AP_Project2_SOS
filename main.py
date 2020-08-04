@@ -8,40 +8,47 @@ import Model
 import sys
 import Login_gui
 from database_manager import Account,AccountManager
-from AccountEdit_gui import AccountManagerWidget,EditAccountDialog;
+from AccountEdit_gui import AccountManagerWidget,EditAccountDialog,show_message;
+from SOS_gui import SOSWindow,SOSDialog
+import random
 class MainWindow(QtWidgets.QWidget):
     
-    def __init__(self,tb):
+    def __init__(self,model):
         super().__init__();
+        self.model = model
         self.layout = QtWidgets.QVBoxLayout();
-        self.a = Account(1,'admin',[],0,0);
-        self.b = Account(2,'admin2',[],2,1);
-        game = Model.SOS(5);
-        game.gameEnded.connect(self.display_end_message);
-        v2 = Gui.SosGridView(game);
-        self.tableModel = tb
-        self.table = QtWidgets.QTableView()
-        self.table.setModel(self.tableModel);
-        self.tableModel.addAccount("efds",'fsd');
-        self.tableModel.addAccount('fdshgfhf','gdsgds');
-        self.layout.addWidget(self.table)
-        self.layout.addWidget(Gui.SosHeader(game,self.a,self.b));
-        self.layout.addWidget(v2);
+        self.game_button = QtWidgets.QPushButton('New game')
+        self.game_button.clicked.connect(self.new_game);
+        self.accounts_button = QtWidgets.QPushButton('Open Account Manager');
+        self.accounts_button.clicked.connect(self.account_manager);
+        self.layout.addWidget(self.accounts_button);
+        self.layout.addWidget(self.game_button);
+        self.v =AccountManagerWidget(self,self.model);
         self.setLayout(self.layout);
-    def display_end_message(self,result):
-        msg_box = QtWidgets.QMessageBox();
-        if result == -1 :
-            msg_box.setText("%s has won!!" % (self.a.username));
-        elif result == 0:
-            msg_box.setText("the game ended in a draw");
-        else :
-            msg_box.setText("%s has won!!" % (self.b.username));
-        self.test_add();
-        msg_box.exec();
-        print("Hello")
-        self.close()
-    def test_add(self):
-        self.tableModel.removeRows(2,1,None);
+        self.game = None;
+    def account_manager(self):
+        self.v.show()
+        print('account manager');
+    def end_game(self,obj):
+        print("HEre")
+        self.game = None;
+    def new_game(self):
+        if self.game != None : return ;
+        account1 = self.model.get_login();
+        di = SOSDialog(self.model);
+        res = di.exec_();
+        if not res:  return ;
+        account2_user = di.username
+        n = di.n;
+        del di;
+        if account1.username == account2_user : 
+            show_message("can't start a game with yourself")
+            return ;
+        account2 = self.model.accounts_model.usernames[account2_user];
+        self.game = SOSWindow(self,n,account1,account2,self.model);
+        self.game.destroyed.connect(self.end_game);
+        self.game.show()
+
 if __name__ == '__main__':
     os.chdir(pathlib.Path(__file__).parent.absolute());
     app = QApplication();
@@ -55,12 +62,12 @@ if __name__ == '__main__':
         di = EditAccountDialog(None,model.get_login(),model,'admin');
         res = di.exec_()
         if not res: sys.exit()
-    v = AccountManagerWidget(model);
-    v.show()
+    #v = AccountManagerWidget(model);
+    #v.show()
     #db = AccountManager('lib.db');
     #tb = Model.AccountsModel(db);
-    #v = MainWindow(tb);
-    #v.show()
+    v = MainWindow(model);
+    v.show()
     #b = MainWindow(tb);
     #b.show()
     sys.exit(app.exec_());

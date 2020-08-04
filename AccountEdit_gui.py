@@ -1,6 +1,7 @@
 from PySide2.QtWidgets import QWidget,QLabel,QTableView,QAction,QMenu,QDialog
 from PySide2 import QtWidgets
 from PySide2 import QtGui
+from PySide2.QtCore import Qt
 class AddAccountDialog(QDialog):
     def __init__(self,parent,model):
         super(AddAccountDialog,self).__init__(parent);
@@ -55,8 +56,10 @@ def show_message(msg):
     msg_box.exec()
 
 class AccountManagerWidget(QtWidgets.QTableView):
-    def __init__(self,model):
-        super(AccountManagerWidget,self).__init__();
+    def __init__(self,parent,model):
+        super(AccountManagerWidget,self).__init__(parent);
+        print(dir(Qt.WindowFlags))
+        self.setWindowFlags(Qt.Window)
         self.setModel(model.accounts_model);
         self.menu = QMenu(self);
         self.model = model

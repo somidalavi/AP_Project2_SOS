@@ -1,5 +1,5 @@
 from PySide2.QtWidgets import QGraphicsScene,QGraphicsView ,\
-                                QGraphicsSimpleTextItem,QWidget,QLabel
+                                QGraphicsSimpleTextItem,QWidget,QLabel,QDialog
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt ,Slot,QRectF
 from PySide2.QtGui import QFont,QWindow
@@ -88,11 +88,14 @@ class SosGridView(QGraphicsView):
         self.fitInView(0,0,csize * self.n,csize * self.n);
 
 class SOSWindow(QWidget):
-    def __init__(self,n,account1,account2,model):
+    def __init__(self,parent,n,account1,account2,model):
         super(SOSWindow,self).__init__(parent);
+        self.setWindowFlags(Qt.Window);
         layout = QtWidgets.QVBoxLayout();
         self.game = model.new_game(n);
-        layout.addWidget(SOSHeader(self.game,account1,account));
+        self.a = account1
+        self.b = account2
+        layout.addWidget(SosHeader(self.game,account1,account2));
         layout.addWidget(SosGridView(self.game));
         self.setLayout(layout)
         self.game.gameEnded.connect(self.game_ended);
@@ -104,7 +107,30 @@ class SOSWindow(QWidget):
             msg_box.setText("the game ended in a draw");
         else :
             msg_box.setText("%s has won!!" % (self.b.username));
-        self.test_add();
+        #self.test_add();
         msg_box.exec();
         self.close()
+    def closeEvent(self,e):
+        self.deleteLater()
+from PySide2.QtWidgets import QComboBox,QSpinBox,QPushButton,QFormLayout
+class SOSDialog(QDialog):
+    def __init__(self,model):
+        super(SOSDialog,self).__init__();
+        self.setWindowTitle("login");
+        self.model = model;
+        self.combo_box = QComboBox()
+        self.combo_box.setModel(self.model.accounts_model);
+        self.n_input = QSpinBox();
+        self.new_game_button = QPushButton("New Game");
+        self.new_game_button.clicked.connect(self.new_game);
+        layout = QFormLayout();
+        layout.addRow('Second Player:',self.combo_box);
+        layout.addRow("Grid size :",self.n_input);
+        layout.addWidget(self.new_game_button);
+        self.setLayout(layout);
+    def new_game(self):
+        self.username = self.combo_box.currentText();
+        self.n = self.n_input.value();
+        if self.n >= 1 and self.n <= 25:
+            self.accept();
 
